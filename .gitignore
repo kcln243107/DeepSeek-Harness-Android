@@ -1,0 +1,18 @@
+build/
+.gradle/
+local.properties
+snapshot/
+app/src/main/assets/snapshot.tar.xz
+*.apk
+.trae/
+# 敏感数据（安全审计 2026-08-14）
+*.credentials.yaml
+token*
+*.key
+*.pem
+*.p12
+.kotlin/
+# 项目文档（含本机信息/密钥，不入公开仓库）
+PROJECT_STRUCTURE.md
+USER_HABITS.md
+PITFALLS.md

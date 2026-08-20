@@ -9,6 +9,7 @@
   - 【高危】修复解压进度条原地刷新 off-by-one：进度行无限拼接，改为正确覆盖上一行。
   - 【高危】修复 WebView JS 桥注入防护缺失：添加导航白名单（仅 localhost/127.0.0.1/data:），saveSettingsYaml 添加 50KB 限制。
   - 【中危】修复更新流程 TOCTOU 竞态：updateRunning 改为 AtomicBoolean CAS 原子占位。
+  - 对齐 YOYOFeelings SnapshotExtractor：进度条封顶（minOf）防止超100%，解压后校验关键文件存在（node/bin.js/termux-exec）。
   - 【中危】修复运行时原子切换无回滚：renameTo 失败时从 usr-old 恢复旧运行时。
   - 【中危】修复下载/解压失败残留数百 MB 临时文件：catch 块清理 update.tar.xz 和 update-stage。
   - 【中危】修复 Logs.tail / engineLogTail 全量读文件 OOM：改为 forEachLine + 滑动窗口。

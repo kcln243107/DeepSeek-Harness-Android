@@ -141,6 +141,7 @@
 
 | Commit | 修复内容 |
 |--------|---------|
+| `2b6a730` | 对齐 YOYOFeelings SnapshotExtractor：进度条封顶（minOf）防止超100%，解压后校验关键文件存在（node/bin.js/termux-exec） |
 | `4c73c07` | 运行时解压并发竞态：`snapshotLock` 互斥锁 + 30s 冷却窗口，修复"解压字节累计超 400MB" |
 | `7f3e191` | Workflow 无限循环：push-back commit 加 `[skip ci]` 标记；`startEngineFlow` 进度 total 透传修复刷屏 |
 | `0862025` | 版本自动递增 workflow 稳定运行 |

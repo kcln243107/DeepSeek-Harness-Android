@@ -69,13 +69,36 @@ object SnapshotExtractor {
         }
       }
       done += entry.size
-      if (done % (1024 * 1024) < entry.size) onProgress(done, totalBytes)
+      // BUG-修复：done 累计的是解压后字节数（uncompressed），而 totalBytes 是压缩包大小，
+      // 解压后半段 done 会超过 totalBytes → 进度显示"446.5/72.3 MB"（量纲不一致）。
+      // 上报时把 done 封顶到 total（total<=0 表示未知，不封顶），进度条到顶后保持 100%。
+      val report = if (totalBytes > 0) minOf(done, totalBytes) else done
+      if (done % (1024 * 1024) < entry.size) onProgress(report, totalBytes)
       entry = tar.nextEntry
     }
     tar.close()
     stampExecAttribute(execFiles)
     // 兜底：对 usr/bin 及关键 usr/lib 补设 exec 位 + Android exec 属性（幂等）。
     RuntimePermissions.ensureExecutable(File(dest, "usr"))
+    // BUG-修复：解压后立即校验关键文件存在，避免静默失败导致后续启动崩溃。
+    assertCriticalFilesPresent(dest)
+  }
+
+  /** 解压后关键文件校验：确保必要二进制和脚本均已正确写入。 */
+  private fun assertCriticalFilesPresent(dest: File) {
+    val usr = File(dest, "usr")
+    val problems = mutableListOf<String>()
+    val preload = RuntimePermissions.resolveTermuxExecPreload(usr)
+    if (preload == null || !preload.exists() || preload.length() == 0L) {
+      problems.add("usr/lib/libtermux-exec*-ld-preload*.so 缺失或 0 字节")
+    }
+    val node = File(usr, "bin/node")
+    if (!node.exists() || node.length() == 0L) problems.add("usr/bin/node 缺失或 0 字节")
+    val binJs = File(usr, "lib/node_modules/@deepseek-ai/dsh/lib/bin.js")
+    if (!binJs.exists() || binJs.length() == 0L) problems.add("dsh bin.js 缺失或 0 字节")
+    if (problems.isNotEmpty()) {
+      throw IllegalStateException("解压后关键文件缺失/损坏: " + problems.joinToString("; "))
+    }
   }
 
   /** Stamp the Android exec attribute on all extracted executables. */
